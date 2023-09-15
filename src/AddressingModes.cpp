@@ -65,6 +65,7 @@ void CPU::ABX() {
     Byte high = Mem[PC];
     PC++;
 
+
     fetchAddress = ((high << 8) | low) + X;
 
     if ((fetchAddress & 0xFF00) != (high << 8)) {

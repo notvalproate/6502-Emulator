@@ -5,24 +5,28 @@
 
 int main() {
     Memory memory;
-    Memory::POWER_ON_RESET_LOC = 0x3333;
-
     CPU cpu(memory);
 
     cpu.reset();
+ 
 
-    memory[0x3333] = 0xA9;
-    memory[0x3334] = 0x42;
+    memory[0x2000] = 0x38;
 
-    memory[0x3335] = 0x48;
+    memory[0x2001] = 0xF8;
+             
+    memory[0x2002] = 0x08;
+             
+    memory[0x2003] = 0xBA;
 
-    memory[0x3336] = 0xA9;
-    memory[0x3337] = 0x43;
+    memory[0x2004] = 0xE8;
+              
+    memory[0x2005] = 0xBD;
+    
+    memory[0x2006] = 0x00;
 
-    memory[0x3338] = 0x68;
+    memory[0x2007] = 0x01;
 
-    memory[0x3339] = 0x02;
-
+    memory[0x2008] = 0x02;
 
     cpu.start();
 

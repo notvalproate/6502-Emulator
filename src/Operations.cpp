@@ -123,7 +123,23 @@ void CPU::AND() {
     N = (A & 0x80) > 0;
 }
 
-void CPU::EOR() {} void CPU::ORA() {} void CPU::BIT() {}
+void CPU::EOR() {
+    A = A ^ fetchedValue;
+    Z = (A == 0);
+    N = (A & 0x80) > 0;
+} 
+
+void CPU::ORA() {
+    A = A | fetchedValue;
+    Z = (A == 0);
+    N = (A & 0x80) > 0;
+} 
+
+void CPU::BIT() {
+    Z = ((fetchedValue & A) == 0);
+    V = (fetchedValue >> 6) & 1;
+    N = (fetchedValue >> 7) & 1; 
+}
 
 
 ///////////////
@@ -135,7 +151,21 @@ void CPU::ADC() {
 
 }
 
-void CPU::SBC() {} void CPU::CMP() {} void CPU::CPX() {} void CPU::CPY() {}
+void CPU::SBC() {
+
+} 
+
+void CPU::CMP() {
+
+} 
+
+void CPU::CPX() {
+
+} 
+
+void CPU::CPY() {
+
+}
 
 
 //////////////////////////////
@@ -143,15 +173,113 @@ void CPU::SBC() {} void CPU::CMP() {} void CPU::CPX() {} void CPU::CPY() {}
 //////////////////////////////
 
 
-void CPU::INC() {} void CPU::INX() {} void CPU::INY() {} void CPU::DEC() {} void CPU::DEX() {} void CPU::DEY() {}
+void CPU::INC() {
+    Mem[fetchAddress]++;
+    Z = (Mem[fetchAddress] == 0);
+    N = (Mem[fetchAddress] & 0x80) > 0;
+} 
+
+void CPU::INX() {
+    X++;
+    Z = (X == 0);
+    N = (X & 0x80) > 0;
+} 
+
+void CPU::INY() {
+    Y++;
+    Z = (Y == 0);
+    N = (Y & 0x80) > 0;
+} 
+
+void CPU::DEC() {
+    Mem[fetchAddress]++;
+    Z = (Mem[fetchAddress] == 0);
+    N = (Mem[fetchAddress] & 0x80) > 0;
+} 
+
+void CPU::DEX() {
+    X--;
+    Z = (X == 0);
+    N = (X & 0x80) > 0;
+} 
+
+void CPU::DEY() {
+    Y--;
+    Z = (Y == 0);
+    N = (Y & 0x80) > 0;
+}
+
 
 ///////////
 // SHIFTS /
 ///////////
 
 
+void CPU::ASL() {
+    C = (fetchedValue >> 7) & 1;
 
-void CPU::ASL() {} void CPU::LSR() {} void CPU::ROL() {} void CPU::ROR() {}
+    Byte Result = fetchedValue << 1;
+
+    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) {
+        A = Result;
+    }
+    else {
+        Mem[fetchAddress] = Result;
+    }
+
+    Z = (Result == 0);
+    N = (Result >> 7) & 1;
+} 
+
+void CPU::LSR() {
+    C = fetchedValue & 1;
+
+    Byte Result = fetchedValue >> 1;
+
+    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) {
+        A = Result;
+    }
+    else {
+        Mem[fetchAddress] = Result;
+    }
+
+    Z = (Result == 0);
+    N = 0;
+} 
+
+void CPU::ROL() {
+    Bit PreviousC = C;
+    C = (fetchedValue >> 7) & 1;
+
+    Byte Result = (fetchedValue << 1) | PreviousC;
+
+    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) {
+        A = Result;
+    }
+    else {
+        Mem[fetchAddress] = Result;
+    }
+
+    Z = (Result == 0);
+    N = (Result >> 7) & 1;
+} 
+
+void CPU::ROR() {
+    Bit PreviousC = C;
+    C = fetchedValue & 1;
+
+    Byte Result = (fetchedValue >> 1) | (PreviousC << 7);
+
+    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) { 
+        A = Result;
+    }
+    else {
+        Mem[fetchAddress] = Result;
+    }
+
+    Z = (Result == 0); 
+    N = PreviousC;
+}
 
 
 ////////////////////
