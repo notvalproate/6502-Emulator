@@ -17,16 +17,24 @@ void CPU::reset() {
 
     PC = (Mem[0xFFFD] << 8) | Mem[0xFFFC];
     fetchAddress = 0x0000;
-    SP = 0x00;
+    SP = 0xFF;
     C = Z = I = D = B = V = N = 0;
     A = X = Y = 0;
     remainingCycles = 0;
 }
 
-void CPU::execute() {
+void CPU::start() {
+    while (!Halt) {
+        clock();
+    }
+}
+
+void CPU::clock() {
     if (remainingCycles == 0) {
         currentInstruction = Mem[PC];
         PC++;
+
+        remainingCycles += 2;
 
         (this->*InstructionTable[currentInstruction].AddressMode)();
 
@@ -34,19 +42,9 @@ void CPU::execute() {
 
         (this->*InstructionTable[currentInstruction].Operation)();
 
-        //test debug for now
-        std::cout << "LDA_IM. A: " << (int)A << " flags: " << Z << " " << N << std::endl;
-        std::cout << "Actual value:\n";
-
-        if (N) {
-            std::cout << "-" << (int)(0b10000000 - (A & 0b01111111));
-        }
-        else {
-            std::cout << "+" << (int)(A & 0b01111111);
-        }
-        std::cout << std::endl;
+        std::cout << (int)A << std::endl;
     }
-
+    
     remainingCycles--;
 }
 

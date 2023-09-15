@@ -31,10 +31,13 @@ struct CPU {
     Word fetchAddressRelative;
     Byte fetchedValue;
 
+    Bit Halt = 0;
+
     void fetch();
 
     void reset();
-    void execute();
+    void start();
+    void clock();
 
     //Instructions
 
