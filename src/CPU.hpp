@@ -31,6 +31,8 @@ struct CPU {
     Word fetchAddressRelative;
     Byte fetchedValue;
 
+    void fetch();
+
     void reset();
     void execute();
 

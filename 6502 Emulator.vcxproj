@@ -127,9 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AddressingModes.cpp" />
     <ClCompile Include="src\CPU.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Memory.cpp" />
+    <ClCompile Include="src\Operations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CPU.hpp" />

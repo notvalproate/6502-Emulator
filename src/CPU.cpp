@@ -4,6 +4,14 @@ CPU::CPU(Memory& mem) : Mem(mem) {
     reset();
 }
 
+void CPU::fetch() {
+    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) {
+        return;
+    }
+
+    fetchedValue = Mem[fetchAddress];
+}
+
 void CPU::reset() {
     Mem.initialize();
 
@@ -21,6 +29,9 @@ void CPU::execute() {
         PC++;
 
         (this->*InstructionTable[currentInstruction].AddressMode)();
+
+        fetch();
+
         (this->*InstructionTable[currentInstruction].Operation)();
 
         //test debug for now
@@ -38,6 +49,8 @@ void CPU::execute() {
 
     remainingCycles--;
 }
+
+// INSTRUCTION TABLE STATIC INITIALIZATION
 
 using c = CPU;
 
@@ -59,140 +72,3 @@ CPU::Instruction CPU::InstructionTable[256] = {
     {&c::CPX, &c::IMM}, {&c::SBC, &c::IZX}, {&c::NOP, &c::IMP}, {&c::XXX, &c::IMP}, {&c::CPX, &c::ZP0}, {&c::SBC, &c::ZP0}, {&c::INC, &c::ZP0}, {&c::XXX, &c::IMP}, {&c::INX, &c::IMP}, {&c::SBC, &c::IMM},  {&c::NOP, &c::IMP}, {&c::XXX, &c::IMP}, {&c::CPX, &c::ABS}, {&c::SBC, &c::ABS}, {&c::INC, &c::ABS}, {&c::XXX, &c::IMP},
     {&c::BEQ, &c::REL}, {&c::SBC, &c::IZY}, {&c::XXX, &c::IMP}, {&c::XXX, &c::IMP}, {&c::XXX, &c::IMP}, {&c::SBC, &c::ZPX}, {&c::INC, &c::ZPX}, {&c::XXX, &c::IMP}, {&c::SED, &c::IMP}, {&c::SBC, &c::ABY},  {&c::NOP, &c::IMP}, {&c::XXX, &c::IMP}, {&c::XXX, &c::IMP}, {&c::SBC, &c::ABX}, {&c::INC, &c::ABX}, {&c::XXX, &c::IMP}
 };
-
-//Addressing Modes
-
-void CPU::IMP() {
-    fetchedValue = A;
-}
-
-void CPU::IMM() {
-    fetchAddress = PC;
-    PC++;
-}
-
-void CPU::ZP0() {
-    fetchAddress = Mem[PC];
-    PC++;
-}
-
-void CPU::ZPX() {
-    fetchAddress = (Mem[PC] + X) & 0x00FF;
-    PC++;
-}
-
-void CPU::ZPY() {
-    fetchAddress = (Mem[PC] + Y) & 0x00FF;
-    PC++;
-}
-
-void CPU::REL() {
-    fetchAddressRelative = Mem[PC];
-    PC++;
-
-    if (fetchAddressRelative & 0x80) {
-        fetchAddressRelative |= 0xFF00;
-    }
-}
-
-void CPU::ABS() {
-    Byte low = Mem[PC];
-    PC++;
-    Byte high = Mem[PC];
-    PC++;
-
-    fetchAddress = (high << 8) | low;
-}
-
-void CPU::ABX() {
-    Byte low = Mem[PC];
-    PC++;
-    Byte high = Mem[PC];
-    PC++;
-
-    fetchAddress = ((high << 8) | low) + X;
-
-    if ((fetchAddress & 0xFF00) != (high << 8)) {
-        remainingCycles++;
-    }
-}
-
-void CPU::ABY() { 
-    Byte low = Mem[PC]; 
-    PC++;
-    Byte high = Mem[PC]; 
-    PC++;
-
-    fetchAddress = ((high << 8) | low) + Y;
-
-    if ((fetchAddress & 0xFF00) != (high << 8)) {
-        remainingCycles++;
-    }
-}
-
-void CPU::IND() {
-    Byte low = Mem[PC];
-    PC++;
-    Byte high = Mem[PC];
-    PC++;
-
-    Word ptr = (high << 8) | low;
-
-    //HARDWARE BUG, PAGE (HIGH BYTE) DOES NOT GO UP WHEN LOW BYTE IS 0xFF
-    if (low == 0xFF) {
-        fetchAddress = (Mem[ptr & 0xFF00] << 8) | Mem[ptr];
-    }
-    else {
-        fetchAddress = (Mem[ptr + 1] << 8) | Mem[ptr];
-    }
-}
-
-void CPU::IZX() {
-    Byte ptr = Mem[PC];
-    PC++;
-
-    Byte low = Mem[(ptr + X) & 0x00FF];
-    Byte high = Mem[(ptr + X + 1) & 0x00FF];
-
-    fetchAddress = (high << 8) | low;
-}
-
-void CPU::IZY() {
-    Byte ptr = Mem[PC];
-    PC++;
-
-    Byte low = Mem[ptr];
-    Byte high = Mem[(ptr + 1) & 0x00FF];
-
-    fetchAddress = ((high << 8) | low) + Y;
-
-    if ((fetchAddress & 0xFF00) != (high << 8)) {
-        remainingCycles++;
-    }
-}
-
-void CPU::ADC() {} void CPU::AND() {} void CPU::ASL() {} void CPU::BCC() {}
-void CPU::BCS() {} void CPU::BEQ() {} void CPU::BIT() {} void CPU::BMI() {}
-void CPU::BNE() {} void CPU::BPL() {} void CPU::BRK() {} void CPU::BVC() {}
-void CPU::BVS() {} void CPU::CLC() {} void CPU::CLD() {} void CPU::CLI() {}
-void CPU::CLV() {} void CPU::CMP() {} void CPU::CPX() {} void CPU::CPY() {}
-void CPU::DEC() {} void CPU::DEX() {} void CPU::DEY() {} void CPU::EOR() {}
-void CPU::INC() {} void CPU::INX() {} void CPU::INY() {} void CPU::JMP() {}
-void CPU::JSR() {} 
-
-void CPU::LDA() {
-    fetchedValue = Mem[fetchAddress];
-    A = fetchedValue;
-    Z = (A == 0);
-    N = (A & 0b10000000) > 0;
-}
-
-void CPU::LDX() {} void CPU::LDY() {}
-void CPU::LSR() {} void CPU::NOP() {} void CPU::ORA() {} void CPU::PHA() {}
-void CPU::PHP() {} void CPU::PLA() {} void CPU::PLP() {} void CPU::ROL() {}
-void CPU::ROR() {} void CPU::RTI() {} void CPU::RTS() {} void CPU::SBC() {}
-void CPU::SEC() {} void CPU::SED() {} void CPU::SEI() {} void CPU::STA() {}
-void CPU::STX() {} void CPU::STY() {} void CPU::TAX() {} void CPU::TAY() {}
-void CPU::TSX() {} void CPU::TXA() {} void CPU::TXS() {} void CPU::TYA() {}
-
-void CPU::XXX() {}
