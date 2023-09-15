@@ -1,7 +1,5 @@
 #include "CPU.hpp"
 
-// OPERATIONS
-
 //////////////////////////////
 // LOAD AND STORE OPERATIONS /
 //////////////////////////////
@@ -10,10 +8,32 @@
 void CPU::LDA() {
     A = fetchedValue;
     Z = (A == 0);
-    N = (A & 0b10000000) > 0;
+    N = (A & 0x80) > 0;
 }
 
-void CPU::LDX() {} void CPU::LDY() {} void CPU::STA() {} void CPU::STX() {} void CPU::STY() {}
+void CPU::LDX() {
+    X = fetchedValue;
+    Z = (X == 0);
+    N = (X & 0x80) > 0;
+}
+
+void CPU::LDY() {
+    Y = fetchedValue;
+    Z = (Y == 0);
+    N = (Y & 0x80) > 0;
+}
+
+void CPU::STA() {
+    Mem[fetchAddress] = A;
+}
+
+void CPU::STX() {
+    Mem[fetchAddress] = X;
+}
+
+void CPU::STY() {
+    Mem[fetchAddress] = Y;
+}
 
 
 ///////////////////////
@@ -21,7 +41,29 @@ void CPU::LDX() {} void CPU::LDY() {} void CPU::STA() {} void CPU::STX() {} void
 ///////////////////////
 
 
-void CPU::TAX() {} void CPU::TAY() {} void CPU::TXA() {} void CPU::TYA() {}
+void CPU::TAX() {
+    X = A;
+    Z = (X == 0);
+    N = (X & 0x80) > 0;
+}
+
+void CPU::TAY() {
+    Y = A;
+    Z = (Y == 0);
+    N = (Y & 0x80) > 0;
+}
+
+void CPU::TXA() {
+    A = X;
+    Z = (A == 0);
+    N = (A & 0x80) > 0;
+}
+
+void CPU::TYA() {
+    A = Y;
+    Z = (A == 0);
+    N = (A & 0x80) > 0;
+}
 
 
 /////////////////////
@@ -29,7 +71,45 @@ void CPU::TAX() {} void CPU::TAY() {} void CPU::TXA() {} void CPU::TYA() {}
 /////////////////////
 
 
-void CPU::TSX() {} void CPU::TXS() {} void CPU::PHA() {} void CPU::PHP() {} void CPU::PLA() {} void CPU::PLP() {}
+void CPU::TSX() {
+    X = SP;
+    Z = (X == 0);
+    N = (X & 0x80) > 0;
+} 
+
+void CPU::TXS() {
+    SP = X;
+} 
+
+void CPU::PHA() {
+    Mem[0x0100 | SP] = A;
+    SP--;
+} 
+
+void CPU::PHP() {
+    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
+    SP--;
+}
+
+void CPU::PLA() {
+    SP++;
+    A = Mem[0x0100 | SP];
+    Z = (A == 0);
+    N = (A & 0x80) > 0;
+}
+
+void CPU::PLP() {
+    SP++;
+    Byte Status = Mem[0x100 | SP];
+
+    C = Status & 1;
+    Z = (Status >> 1) & 1;
+    I = (Status >> 2) & 1;
+    D = (Status >> 3) & 1;
+    B = (Status >> 4) & 1;
+    V = (Status >> 6) & 1;
+    N = (Status >> 7) & 1;
+}
 
 
 ////////////
@@ -87,7 +167,109 @@ void CPU::JMP() {} void CPU::JSR() {} void CPU::RTS() {}
 /////////////
 
 
-void CPU::BCC() {} void CPU::BCS() {} void CPU::BEQ() {} void CPU::BMI() {} void CPU::BNE() {} void CPU::BPL() {} void CPU::BVC() {} void CPU::BVS() {} 
+void CPU::BCC() {
+    if (C == 0) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
+
+void CPU::BCS() {
+    if (C == 1) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
+
+void CPU::BEQ() {
+    if (Z == 1) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
+
+void CPU::BMI() {
+    if (N == 1) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
+
+void CPU::BNE() {
+    if (Z == 0) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
+
+void CPU::BPL() {
+    if (N == 0) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
+
+void CPU::BVC() {
+    if (V == 0) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
+
+void CPU::BVS() {
+    if (V == 1) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+} 
 
 
 ////////////////////////
@@ -95,7 +277,33 @@ void CPU::BCC() {} void CPU::BCS() {} void CPU::BEQ() {} void CPU::BMI() {} void
 ////////////////////////
 
 
-void CPU::CLC() {} void CPU::CLD() {} void CPU::CLI() {} void CPU::CLV() {} void CPU::SEC() {} void CPU::SED() {} void CPU::SEI() {}
+void CPU::CLC() {
+    C = 0;
+} 
+
+void CPU::CLD() {
+    D = 0;
+} 
+
+void CPU::CLI() {
+    I = 0;
+} 
+
+void CPU::CLV() {
+    V = 0;
+} 
+
+void CPU::SEC() {
+    C = 1;
+} 
+
+void CPU::SED() {
+    D = 1;
+} 
+
+void CPU::SEI() {
+    I = 1;
+}
 
 
 /////////////////////
@@ -103,9 +311,7 @@ void CPU::CLC() {} void CPU::CLD() {} void CPU::CLI() {} void CPU::CLV() {} void
 /////////////////////
 
 
-void CPU::BRK() {}
-void CPU::NOP() {}
-void CPU::RTI() {}
+void CPU::BRK() {} void CPU::NOP() {} void CPU::RTI() {}
 
 
 ////////////////////
@@ -113,4 +319,6 @@ void CPU::RTI() {}
 ////////////////////
 
 
-void CPU::XXX() {}
+void CPU::XXX() {
+    Halt = 1;
+}
