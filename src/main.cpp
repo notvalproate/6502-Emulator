@@ -12,7 +12,7 @@ int main() {
     cpu.reset();
 
     memory[0x3333] = 0xA9;
-    memory[0x3334] = 0xFF;
+    memory[0x3334] = 0x42;
 
     cpu.execute();
 
