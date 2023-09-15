@@ -1,5 +1,10 @@
 #include "CPU.hpp"
 
+/////////////////////////////////////
+// IMPLIED, IMMEDIATE, AND RELATIVE /
+/////////////////////////////////////
+
+
 void CPU::IMP() {
     fetchedValue = A;
 }
@@ -8,6 +13,21 @@ void CPU::IMM() {
     fetchAddress = PC;
     PC++;
 }
+
+void CPU::REL() {
+    fetchAddressRelative = Mem[PC];
+    PC++;
+
+    if (fetchAddressRelative & 0x80) {
+        fetchAddressRelative |= 0xFF00;
+    }
+}
+
+
+//////////////
+// ZERO PAGE /
+//////////////
+
 
 void CPU::ZP0() {
     fetchAddress = Mem[PC];
@@ -24,14 +44,11 @@ void CPU::ZPY() {
     PC++;
 }
 
-void CPU::REL() {
-    fetchAddressRelative = Mem[PC];
-    PC++;
 
-    if (fetchAddressRelative & 0x80) {
-        fetchAddressRelative |= 0xFF00;
-    }
-}
+/////////////
+// ABSOLUTE /
+/////////////
+
 
 void CPU::ABS() {
     Byte low = Mem[PC];
@@ -68,6 +85,12 @@ void CPU::ABY() {
     }
 }
 
+
+/////////////
+// INDIRECT /
+/////////////
+
+
 void CPU::IND() {
     Byte low = Mem[PC];
     PC++;
@@ -76,7 +99,7 @@ void CPU::IND() {
 
     Word ptr = (high << 8) | low;
 
-    //HARDWARE BUG, PAGE (HIGH BYTE) DOES NOT GO UP WHEN LOW BYTE IS 0xFF
+    //HARDWARE BUG, PAGE (HIGH BYTE) DOES NOT INCREMENT WHEN LOW BYTE IS 0xFF
     if (low == 0xFF) {
         fetchAddress = (Mem[ptr & 0xFF00] << 8) | Mem[ptr];
     }
