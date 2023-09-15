@@ -1,11 +1,10 @@
 #pragma once
 #include <iostream>
+#include <vector>
 #include "Memory.hpp"
 
 struct CPU {
-    CPU(Memory& mem) : Mem(mem) {
-        reset();
-    }
+    CPU(Memory& mem);
 
     //Internals
     Memory& Mem;
@@ -26,8 +25,11 @@ struct CPU {
     Bit N : 1;
 
     u32 remainingCycles;
+    Byte currentInstruction;
 
-    Byte fetchByte();
+    Word fetchAddress;
+    Word fetchAddressRelative;
+    Byte fetchedValue;
 
     void reset();
     void execute();
@@ -35,9 +37,11 @@ struct CPU {
     //Instructions
 
     struct Instruction {
-        void(*Operation)(void);
-        void(*AddressMode)(void);
+        void(CPU::*Operation)(void);
+        void(CPU::*AddressMode)(void);
     };
+
+    static Instruction InstructionTable[256];
 
     //Addressing Modes
 
@@ -64,4 +68,6 @@ struct CPU {
     void SEC(); void SED(); void SEI(); void STA();
     void STX(); void STY(); void TAX(); void TAY();
     void TSX(); void TXA(); void TXS(); void TYA();
+
+    void XXX(); //Invalid Opcode
 };
