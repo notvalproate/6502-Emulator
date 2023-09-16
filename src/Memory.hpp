@@ -8,8 +8,8 @@ using Word = unsigned short;
 using u32 = unsigned int;
 
 struct Memory {
-    Memory(Word resetlocation = 0x2000) {
-        POWER_ON_RESET_LOC = resetlocation;
+    Memory(Word resetVector = 0x8000) {
+        POWER_ON_RESET_LOC = resetVector;
     }
 
     static constexpr u32 MAX_MEM = 1024 * 64;
