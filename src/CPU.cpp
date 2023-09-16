@@ -16,11 +16,20 @@ void CPU::reset() {
     Mem.initialize();
 
     PC = (Mem[0xFFFD] << 8) | Mem[0xFFFC];
-    fetchAddress = 0x0000;
     SP = 0xFF;
+
+    fetchAddress = 0x0000;
+    fetchedValue = 0x00;
+    fetchAddressRelative = 0x0000;
+
+    Halt = 0;
+
     C = Z = I = D = B = V = N = 0;
+
     A = X = Y = 0;
-    remainingCycles = 0;
+
+    remainingCycles = 8;
+    currentInstruction = 0x00;
 }
 
 void CPU::start() {
