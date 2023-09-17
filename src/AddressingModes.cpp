@@ -1,20 +1,20 @@
-#include "CPU.hpp"
+#include "CPU_6502.hpp"
 
 /////////////////////////////////////
 // IMPLIED, IMMEDIATE, AND RELATIVE /
 /////////////////////////////////////
 
 
-void CPU::IMP() {
+void CPU_6502::IMP() {
     fetchedValue = A;
 }
 
-void CPU::IMM() {
+void CPU_6502::IMM() {
     fetchAddress = PC;
     PC++;
 }
 
-void CPU::REL() {
+void CPU_6502::REL() {
     fetchAddressRelative = Mem[PC];
     PC++;
 
@@ -29,17 +29,17 @@ void CPU::REL() {
 //////////////
 
 
-void CPU::ZP0() {
+void CPU_6502::ZP0() {
     fetchAddress = Mem[PC];
     PC++;
 }
 
-void CPU::ZPX() {
+void CPU_6502::ZPX() {
     fetchAddress = (Mem[PC] + X) & 0x00FF;
     PC++;
 }
 
-void CPU::ZPY() {
+void CPU_6502::ZPY() {
     fetchAddress = (Mem[PC] + Y) & 0x00FF;
     PC++;
 }
@@ -50,7 +50,7 @@ void CPU::ZPY() {
 /////////////
 
 
-void CPU::ABS() {
+void CPU_6502::ABS() {
     Byte low = Mem[PC];
     PC++;
     Byte high = Mem[PC];
@@ -59,7 +59,7 @@ void CPU::ABS() {
     fetchAddress = (high << 8) | low;
 }
 
-void CPU::ABX() {
+void CPU_6502::ABX() {
     Byte low = Mem[PC];
     PC++;
     Byte high = Mem[PC];
@@ -73,7 +73,7 @@ void CPU::ABX() {
     }
 }
 
-void CPU::ABY() {
+void CPU_6502::ABY() {
     Byte low = Mem[PC];
     PC++;
     Byte high = Mem[PC];
@@ -92,7 +92,7 @@ void CPU::ABY() {
 /////////////
 
 
-void CPU::IND() {
+void CPU_6502::IND() {
     Byte low = Mem[PC];
     PC++;
     Byte high = Mem[PC];
@@ -109,7 +109,7 @@ void CPU::IND() {
     }
 }
 
-void CPU::IZX() {
+void CPU_6502::IZX() {
     Byte ptr = Mem[PC];
     PC++;
 
@@ -119,7 +119,7 @@ void CPU::IZX() {
     fetchAddress = (high << 8) | low;
 }
 
-void CPU::IZY() {
+void CPU_6502::IZY() {
     Byte ptr = Mem[PC];
     PC++;
 

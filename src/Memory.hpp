@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <string>
 
 using Bit = bool;
 using Byte = unsigned char;
@@ -8,17 +9,22 @@ using Word = unsigned short;
 using u32 = unsigned int;
 
 struct Memory {
-    Memory(Word resetVector = 0x8000) {
-        POWER_ON_RESET_LOC = resetVector;
+    Memory() = default;
+
+    Memory(Word resetVector) {
+        RESET_VECTOR = resetVector;
     }
 
     static constexpr u32 MAX_MEM = 1024 * 64;
 
-    static Word POWER_ON_RESET_LOC;
+    static Word RESET_VECTOR;
+    static Word NMI_HANDLER;
+    static Word IRQ_HANDLER;
 
     static Byte Data[MAX_MEM];
 
     void initialize();
+    void loadMemoryAt(Word address, const std::string& path);
 
     Byte operator[](u32 address) const;
     Byte& operator[](u32 address);

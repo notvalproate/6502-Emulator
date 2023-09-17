@@ -3,8 +3,8 @@
 #include <vector>
 #include "Memory.hpp"
 
-struct CPU {
-    CPU(Memory& mem);
+struct CPU_6502 {
+    CPU_6502(Memory& mem);
 
     //Internals
 
@@ -40,6 +40,9 @@ struct CPU {
     void start();
     void clock();
 
+    void irq();
+    void nmi();
+
     //Addressing Modes
 
     void IMP(); void IMM();
@@ -71,11 +74,11 @@ struct CPU {
     //Instruction Table
 
     struct Instruction {
-        void(CPU::*Operation)(void);
-        void(CPU::*AddressMode)(void);
+        void(CPU_6502::*Operation)(void);
+        void(CPU_6502::*AddressMode)(void);
     };
 
-    using c = CPU;
+    using c = CPU_6502;
 
     static constexpr Instruction InstructionTable[256] = {
         {&c::BRK, &c::IMP}, {&c::ORA, &c::IZX}, {&c::XXX, &c::IMP}, {&c::XXX, &c::IMP}, {&c::NOP, &c::IMP}, {&c::ORA, &c::ZP0}, {&c::ASL, &c::ZP0}, {&c::XXX, &c::IMP}, {&c::PHP, &c::IMP}, {&c::ORA, &c::IMM},  {&c::ASL, &c::IMP}, {&c::XXX, &c::IMP}, {&c::XXX, &c::IMP}, {&c::ORA, &c::ABS}, {&c::ASL, &c::ABS}, {&c::XXX, &c::IMP},

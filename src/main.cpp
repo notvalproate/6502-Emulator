@@ -1,40 +1,15 @@
 #include "Memory.hpp"
-#include "CPU.hpp"
+#include "CPU_6502.hpp"
 
 // http://www.6502.org/users/obelisk/
 
-int main() {
-    Memory memory;
-    CPU cpu(memory);
-
-    cpu.reset();
+void main() {
+    Memory memory(0x0400);
+    CPU_6502 cpu(memory);
     
-    memory[0x9000] = 0xA2;
-    memory[0x9001] = 0x0A; 
-    memory[0x9002] = 0x86;
-    memory[0x9003] = 0x00;
-    memory[0x9004] = 0xA2;
-    memory[0x9005] = 0x03;
-    memory[0x9006] = 0x86;
-    memory[0x9007] = 0x01;
-             
-    memory[0x9008] = 0xA4;
-    memory[0x9009] = 0x00;
-    memory[0x900A] = 0xA9;
-    memory[0x900B] = 0x00;
-    memory[0x900C] = 0x18;
-    memory[0x900D] = 0x65;
-    memory[0x900E] = 0x01;
-    memory[0x900F] = 0x88;
-             
-    memory[0x9010] = 0xD0;
-    memory[0x9011] = 0xFB;
-    memory[0x9012] = 0x85;
-    memory[0x9013] = 0x02;
-             
-    memory[0x9014] = 0x02;
+    cpu.reset();
+
+    memory.loadMemoryAt(0x000A, "tests/functional_test.bin");
 
     cpu.start();
-
-    return 0;
 }

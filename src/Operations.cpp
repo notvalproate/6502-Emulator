@@ -1,37 +1,37 @@
-#include "CPU.hpp"
+#include "CPU_6502.hpp"
 
 //////////////////////////////
 // LOAD AND STORE OPERATIONS /
 //////////////////////////////
 
 
-void CPU::LDA() {
+void CPU_6502::LDA() {
     A = fetchedValue;
     Z = A == 0;
     N = A & 0x80;
 }
 
-void CPU::LDX() {
+void CPU_6502::LDX() {
     X = fetchedValue;
     Z = X == 0;
     N = X & 0x80;
 }
 
-void CPU::LDY() {
+void CPU_6502::LDY() {
     Y = fetchedValue;
     Z = Y == 0;
     N = Y & 0x80;
 }
 
-void CPU::STA() {
+void CPU_6502::STA() {
     Mem[fetchAddress] = A;
 }
 
-void CPU::STX() {
+void CPU_6502::STX() {
     Mem[fetchAddress] = X;
 }
 
-void CPU::STY() {
+void CPU_6502::STY() {
     Mem[fetchAddress] = Y;
 }
 
@@ -41,25 +41,25 @@ void CPU::STY() {
 ///////////////////////
 
 
-void CPU::TAX() {
+void CPU_6502::TAX() {
     X = A;
     Z = X == 0;
     N = X & 0x80;
 }
 
-void CPU::TAY() {
+void CPU_6502::TAY() {
     Y = A;
     Z = Y == 0;
     N = Y & 0x80;
 }
 
-void CPU::TXA() {
+void CPU_6502::TXA() {
     A = X;
     Z = A == 0;
     N = A & 0x80;
 }
 
-void CPU::TYA() {
+void CPU_6502::TYA() {
     A = Y;
     Z = A == 0;
     N = A & 0x80;
@@ -71,36 +71,37 @@ void CPU::TYA() {
 /////////////////////
 
 
-void CPU::TSX() {
+void CPU_6502::TSX() {
     X = SP;
     Z = X == 0;
     N = X & 0x80;
 } 
 
-void CPU::TXS() {
+void CPU_6502::TXS() {
     SP = X;
 } 
 
-void CPU::PHA() {
+void CPU_6502::PHA() {
     Mem[0x0100 | SP] = A;
     SP--;
 } 
 
-void CPU::PHP() {
+void CPU_6502::PHP() {
+    B = 1;
     Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
     SP--;
 }
 
-void CPU::PLA() {
+void CPU_6502::PLA() {
     SP++;
     A = Mem[0x0100 | SP];
     Z = A == 0;
     N = A & 0x80;
 }
 
-void CPU::PLP() {
+void CPU_6502::PLP() {
     SP++;
-    Byte Status = Mem[0x100 | SP];
+    Byte Status = Mem[0x0100 | SP];
 
     C = Status & 1;
     Z = (Status >> 1) & 1;
@@ -117,25 +118,25 @@ void CPU::PLP() {
 ////////////
 
 
-void CPU::AND() {
+void CPU_6502::AND() {
     A = A & fetchedValue;
     Z = A == 0;
     N = A & 0x80;
 }
 
-void CPU::EOR() {
+void CPU_6502::EOR() {
     A = A ^ fetchedValue;
     Z = A == 0;
     N = A & 0x80;
 } 
 
-void CPU::ORA() {
+void CPU_6502::ORA() {
     A = A | fetchedValue;
     Z = A == 0;
     N = A & 0x80;
 } 
 
-void CPU::BIT() {
+void CPU_6502::BIT() {
     Z = ((fetchedValue & A) == 0);
     V = (fetchedValue >> 6) & 1;
     N = (fetchedValue >> 7) & 1; 
@@ -146,7 +147,7 @@ void CPU::BIT() {
 ///////////////
 
 
-void CPU::ADC() {
+void CPU_6502::ADC() {
     Word Result = (Word)A + (Word)fetchedValue + (Word)C;
     C = (Result >> 8) & 1;
     Z = (Result & 0xFF) == 0;
@@ -155,7 +156,7 @@ void CPU::ADC() {
     A = Result & 0xFF;
 }
 
-void CPU::SBC() {
+void CPU_6502::SBC() {
     Byte Inverted = fetchedValue ^ 0xFF;
 
     Word Result = (Word)A + (Word)Inverted + (Word)C; 
@@ -166,21 +167,21 @@ void CPU::SBC() {
     A = Result & 0xFF;
 } 
 
-void CPU::CMP() {
+void CPU_6502::CMP() {
     Word Result = (Word)A - (Word)fetchedValue;
     C = A >= fetchedValue;
     Z = (Result & 0xFF) == 0;
     N = Result & 0x80;
 } 
 
-void CPU::CPX() {
+void CPU_6502::CPX() {
     Word Result = (Word)X - (Word)fetchedValue;
     C = X >= fetchedValue;
     Z = (Result & 0xFF) == 0;
     N = Result & 0x80;
 } 
 
-void CPU::CPY() {
+void CPU_6502::CPY() {
     Word Result = (Word)Y - (Word)fetchedValue;
     C = Y >= fetchedValue;
     Z = (Result & 0xFF) == 0;
@@ -193,37 +194,37 @@ void CPU::CPY() {
 //////////////////////////////
 
 
-void CPU::INC() {
+void CPU_6502::INC() {
     Mem[fetchAddress]++;
     Z = Mem[fetchAddress] == 0;
     N = Mem[fetchAddress] & 0x80;
 } 
 
-void CPU::INX() {
+void CPU_6502::INX() {
     X++;
     Z = X == 0;
     N = X & 0x80;
 } 
 
-void CPU::INY() {
+void CPU_6502::INY() {
     Y++;
     Z = Y == 0;
     N = Y & 0x80;
 } 
 
-void CPU::DEC() {
+void CPU_6502::DEC() {
     Mem[fetchAddress]++;
     Z = Mem[fetchAddress] == 0;
     N = Mem[fetchAddress] & 0x80;
 } 
 
-void CPU::DEX() {
+void CPU_6502::DEX() {
     X--;
     Z = X == 0;
     N = X & 0x80;
 } 
 
-void CPU::DEY() {
+void CPU_6502::DEY() {
     Y--;
     Z = Y == 0;
     N = Y & 0x80;
@@ -235,12 +236,12 @@ void CPU::DEY() {
 ///////////
 
 
-void CPU::ASL() {
+void CPU_6502::ASL() {
     C = (fetchedValue >> 7) & 1;
 
     Byte Result = fetchedValue << 1;
 
-    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) {
+    if (InstructionTable[currentInstruction].AddressMode == &CPU_6502::IMP) {
         A = Result;
     }
     else {
@@ -251,12 +252,12 @@ void CPU::ASL() {
     N = (Result >> 7) & 1;
 } 
 
-void CPU::LSR() {
+void CPU_6502::LSR() {
     C = fetchedValue & 1;
 
     Byte Result = fetchedValue >> 1;
 
-    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) {
+    if (InstructionTable[currentInstruction].AddressMode == &CPU_6502::IMP) {
         A = Result;
     }
     else {
@@ -267,13 +268,13 @@ void CPU::LSR() {
     N = 0;
 } 
 
-void CPU::ROL() {
+void CPU_6502::ROL() {
     Bit PreviousC = C;
     C = (fetchedValue >> 7) & 1;
 
     Byte Result = (fetchedValue << 1) + PreviousC;
 
-    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) {
+    if (InstructionTable[currentInstruction].AddressMode == &CPU_6502::IMP) {
         A = Result;
     }
     else {
@@ -284,13 +285,13 @@ void CPU::ROL() {
     N = (Result >> 7) & 1;
 } 
 
-void CPU::ROR() {
+void CPU_6502::ROR() {
     Bit PreviousC = C;
     C = fetchedValue & 1;
 
     Byte Result = (fetchedValue >> 1) | (PreviousC << 7);
 
-    if (InstructionTable[currentInstruction].AddressMode == &CPU::IMP) { 
+    if (InstructionTable[currentInstruction].AddressMode == &CPU_6502::IMP) { 
         A = Result;
     }
     else {
@@ -307,11 +308,11 @@ void CPU::ROR() {
 ////////////////////
 
 
-void CPU::JMP() {
+void CPU_6502::JMP() {
     PC = fetchAddress;
 } 
 
-void CPU::JSR() {
+void CPU_6502::JSR() {
     PC--;
 
     Mem[0x0100 | SP] = (PC >> 8) & 0xFF;
@@ -322,7 +323,7 @@ void CPU::JSR() {
     PC = fetchAddress;
 } 
 
-void CPU::RTS() {
+void CPU_6502::RTS() {
     SP++;
     PC = Mem[0x0100 | SP];
     SP++;
@@ -337,7 +338,7 @@ void CPU::RTS() {
 /////////////
 
 
-void CPU::BCC() {
+void CPU_6502::BCC() {
     if (C == 0) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -350,7 +351,7 @@ void CPU::BCC() {
     }
 } 
 
-void CPU::BCS() {
+void CPU_6502::BCS() {
     if (C == 1) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -363,7 +364,7 @@ void CPU::BCS() {
     }
 } 
 
-void CPU::BEQ() {
+void CPU_6502::BEQ() {
     if (Z == 1) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -376,7 +377,7 @@ void CPU::BEQ() {
     }
 } 
 
-void CPU::BMI() {
+void CPU_6502::BMI() {
     if (N == 1) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -389,7 +390,7 @@ void CPU::BMI() {
     }
 } 
 
-void CPU::BNE() {
+void CPU_6502::BNE() {
     if (Z == 0) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -402,7 +403,7 @@ void CPU::BNE() {
     }
 } 
 
-void CPU::BPL() {
+void CPU_6502::BPL() {
     if (N == 0) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -415,7 +416,7 @@ void CPU::BPL() {
     }
 } 
 
-void CPU::BVC() {
+void CPU_6502::BVC() {
     if (V == 0) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -428,7 +429,7 @@ void CPU::BVC() {
     }
 } 
 
-void CPU::BVS() {
+void CPU_6502::BVS() {
     if (V == 1) {
         remainingCycles++;
         fetchAddress = PC + fetchAddressRelative;
@@ -447,31 +448,31 @@ void CPU::BVS() {
 ////////////////////////
 
 
-void CPU::CLC() {
+void CPU_6502::CLC() {
     C = 0;
 } 
 
-void CPU::CLD() {
+void CPU_6502::CLD() {
     D = 0;
 } 
 
-void CPU::CLI() {
+void CPU_6502::CLI() {
     I = 0;
 } 
 
-void CPU::CLV() {
+void CPU_6502::CLV() {
     V = 0;
 } 
 
-void CPU::SEC() {
+void CPU_6502::SEC() {
     C = 1;
 } 
 
-void CPU::SED() {
+void CPU_6502::SED() {
     D = 1;
 } 
 
-void CPU::SEI() {
+void CPU_6502::SEI() {
     I = 1;
 }
 
@@ -481,24 +482,95 @@ void CPU::SEI() {
 /////////////////////
 
 
-void CPU::BRK() {
+void CPU_6502::BRK() {
+    PC++;
 
-} 
+    Mem[0x0100 | SP] = (PC >> 8) & 0xFF;
+    SP--;
 
-void CPU::NOP() {
+    Mem[0x0100 | SP] = PC & 0xFF;
+    SP--;
 
-} 
+    B = 1;
+    I = 1;
+    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
+    B = 0;
+    SP--;
 
-void CPU::RTI() {
-
+    PC = Mem[0xFFFF] << 8 | Mem[0xFFFE];
 }
 
+void CPU_6502::NOP() {
+    if (currentInstruction == 0x04) {
+        Halt = 1;
+    }
+} 
+
+void CPU_6502::RTI() {
+    SP++;
+    Byte Status = Mem[0x0100 | SP];
+
+    C = Status & 1;
+    Z = (Status >> 1) & 1;
+    I = (Status >> 2) & 1;
+    D = (Status >> 3) & 1;
+    B = (Status >> 4) & 1;
+    V = (Status >> 6) & 1;
+    N = (Status >> 7) & 1;
+
+    SP++;
+    PC = Mem[0x0100 | SP];
+    SP++;
+    PC |= Mem[0x0100 | SP] << 8;
+}
 
 ////////////////////
 // INVALID OP CODE /
 ////////////////////
 
 
-void CPU::XXX() {
-    Halt = 1;
+void CPU_6502::XXX() {
+    return;
+}
+
+
+///////////////
+// INTERRUPTS /
+///////////////
+
+
+void CPU_6502::irq() {
+    if (I == 0) {
+        Mem[0x0100 | SP] = (PC >> 8) & 0xFF;
+        SP--;
+        Mem[0x0100 | SP] = PC & 0xFF;
+        SP--;
+
+        B = 1;
+        I = 1;
+        Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
+        B = 0;
+        SP--;
+
+        PC = (Mem[0xFFFF] << 8) | Mem[0xFFFE];
+
+        remainingCycles += 7;
+    }
+}
+
+void CPU_6502::nmi() {
+    Mem[0x0100 | SP] = (PC >> 8) & 0xFF;
+    SP--;
+    Mem[0x0100 | SP] = PC & 0xFF;
+    SP--;
+
+    B = 1;
+    I = 1;
+    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
+    B = 0;
+    SP--;
+
+    PC = (Mem[0xFFFB] << 8) | Mem[0xFFFA];
+
+    remainingCycles += 8;
 }
