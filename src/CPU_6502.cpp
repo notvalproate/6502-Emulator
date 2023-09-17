@@ -1,4 +1,7 @@
 #include "CPU_6502.hpp"
+#include <chrono>
+
+int CPU_6502::totalCycles = 0;
 
 CPU_6502::CPU_6502(Memory& mem) : Mem(mem) {
     reset();
@@ -34,30 +37,40 @@ void CPU_6502::reset() {
 }
 
 void CPU_6502::start() {
+    auto start = std::chrono::high_resolution_clock::now();
     while (!Halt) {
         clock();
     }
-}
+    auto end = std::chrono::high_resolution_clock::now();
+    auto durationS = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+    auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-// 0011 0000
-// 
+    std::cout << "Total CPU Runtime: " << durationS.count() << "s" << durationMs.count() % 1000 << "ms" << std::endl;
+
+    double frequency = (totalCycles / 1000000.0) / ((double)durationS.count() + ((durationMs.count() % 1000) / 1000.0));
+
+    std::cout << "CPU Frequency: " << frequency << " Mhz" << std::endl;
+}
 
 void CPU_6502::clock() {
     if (remainingCycles == 0) {
-        if (PC == 0x3469) {
-            __debugbreak();
+        if (PC == 0x336d) {
+            std::cout << "\nALL TESTS PASSED. \n\nTotal Cycles Taken: " << totalCycles << std::endl;
+            Halt = 1;
         }
 
         currentInstruction = Mem[PC];
         PC++;
 
-        remainingCycles += 2;
+        remainingCycles += InstructionTable[currentInstruction].requiredCycles;
 
         (this->*InstructionTable[currentInstruction].AddressMode)();
 
         fetch();
 
         (this->*InstructionTable[currentInstruction].Operation)();
+
+        totalCycles += remainingCycles;
     }
     
     remainingCycles--;

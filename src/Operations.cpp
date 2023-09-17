@@ -84,11 +84,10 @@ void CPU_6502::TXS() {
 void CPU_6502::PHA() {
     Mem[0x0100 | SP] = A;
     SP--;
-} 
+}   
 
 void CPU_6502::PHP() {
-    B = 1;
-    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
+    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (1 << 4) | (1 << 5) | (V << 6) | (N << 7);
     SP--;
 }
 
@@ -157,13 +156,13 @@ void CPU_6502::ADC() {
 }
 
 void CPU_6502::SBC() {
-    Byte Inverted = fetchedValue ^ 0xFF;
+    Word Inverted = ((Word)fetchedValue) ^ 0x00FF;
 
-    Word Result = (Word)A + (Word)Inverted + (Word)C; 
-    C = (Result >> 8) & 1; 
-    Z = (Result & 0xFF) == 0; 
-    N = Result & 0x80;
-    V = (~(A ^ fetchedValue) & (A ^ Result)) & 0x80; 
+    Word Result = (Word)A + Inverted + (Word)(C);
+    C = (Result & 0xFF00) > 0;
+    Z = (Result & 0x00FF) == 0;
+    N = Result & 0x0080;
+    V = ((Result ^ (Word)A) & (Result ^ Inverted)) & 0x0080;
     A = Result & 0xFF;
 } 
 
@@ -195,6 +194,7 @@ void CPU_6502::CPY() {
 
 
 void CPU_6502::INC() {
+    Byte tempp = Mem[fetchAddress];
     Mem[fetchAddress]++;
     Z = Mem[fetchAddress] == 0;
     N = Mem[fetchAddress] & 0x80;
@@ -213,7 +213,7 @@ void CPU_6502::INY() {
 } 
 
 void CPU_6502::DEC() {
-    Mem[fetchAddress]++;
+    Mem[fetchAddress]--;
     Z = Mem[fetchAddress] == 0;
     N = Mem[fetchAddress] & 0x80;
 } 
@@ -491,10 +491,8 @@ void CPU_6502::BRK() {
     Mem[0x0100 | SP] = PC & 0xFF;
     SP--;
 
-    B = 1;
+    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (1 << 4) | (1 << 5) | (V << 6) | (N << 7);
     I = 1;
-    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
-    B = 0;
     SP--;
 
     PC = Mem[0xFFFF] << 8 | Mem[0xFFFE];
@@ -546,10 +544,8 @@ void CPU_6502::irq() {
         Mem[0x0100 | SP] = PC & 0xFF;
         SP--;
 
-        B = 1;
         I = 1;
         Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
-        B = 0;
         SP--;
 
         PC = (Mem[0xFFFF] << 8) | Mem[0xFFFE];
@@ -564,10 +560,8 @@ void CPU_6502::nmi() {
     Mem[0x0100 | SP] = PC & 0xFF;
     SP--;
 
-    B = 1;
     I = 1;
     Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
-    B = 0;
     SP--;
 
     PC = (Mem[0xFFFB] << 8) | Mem[0xFFFA];

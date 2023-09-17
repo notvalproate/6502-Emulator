@@ -34,7 +34,7 @@ void Memory::loadMemoryAt(Word address, const std::string& path) {
     auto fileSize = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    auto count = fread(&Data[address], 1, 65526, fp);
+    auto count = fread(&Data[address], 1, fileSize, fp);
 
     if (count == fileSize) {
         std::cout << "Successfully loaded file fully into memory!\nBytes succesfully loaded: " << count << std::endl;
