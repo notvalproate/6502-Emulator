@@ -68,9 +68,7 @@ void CPU_6502::clock() {
         remainingCycles += InstructionTable[currentInstruction].requiredCycles;
 
         (this->*InstructionTable[currentInstruction].AddressMode)();
-
         fetch();
-
         (this->*InstructionTable[currentInstruction].Operation)();
 
         totalCycles += remainingCycles;

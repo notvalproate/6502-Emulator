@@ -131,17 +131,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\AddressingModes.cpp" />
-    <ClCompile Include="src\CPU_6502.cpp" />
+    <ClCompile Include="src\cpu\AddressingModes.cpp" />
+    <ClCompile Include="src\cpu\CPU_6502.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Memory.cpp" />
-    <ClCompile Include="src\Operations.cpp" />
+    <ClCompile Include="src\cpu\Operations.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\CPU_6502.hpp" />
+    <ClInclude Include="src\cpu\CPU_6502.hpp" />
     <ClInclude Include="src\Memory.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="tests\complete_test.bin" />
     <None Include="tests\functional_test.bin" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

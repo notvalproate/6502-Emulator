@@ -75,16 +75,16 @@ void CPU_6502::TSX() {
     X = SP;
     Z = X == 0;
     N = X & 0x80;
-} 
+}
 
 void CPU_6502::TXS() {
     SP = X;
-} 
+}
 
 void CPU_6502::PHA() {
     Mem[0x0100 | SP] = A;
     SP--;
-}   
+}
 
 void CPU_6502::PHP() {
     Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (1 << 4) | (1 << 5) | (V << 6) | (N << 7);
@@ -127,18 +127,18 @@ void CPU_6502::EOR() {
     A = A ^ fetchedValue;
     Z = A == 0;
     N = A & 0x80;
-} 
+}
 
 void CPU_6502::ORA() {
     A = A | fetchedValue;
     Z = A == 0;
     N = A & 0x80;
-} 
+}
 
 void CPU_6502::BIT() {
     Z = ((fetchedValue & A) == 0);
     V = (fetchedValue >> 6) & 1;
-    N = (fetchedValue >> 7) & 1; 
+    N = (fetchedValue >> 7) & 1;
 }
 
 ///////////////
@@ -161,7 +161,7 @@ void CPU_6502::ADC() {
     }
 
     Word Result = (Word)A + (Word)fetchedValue + (Word)C;
-    C = (Result >> 8) & 1;
+    C = (Result & 0xFF00) > 0;
     Z = (Result & 0xFF) == 0;
     N = Result & 0x80;
     V = (~(A ^ fetchedValue) & (A ^ Result)) & 0x80;
@@ -179,7 +179,6 @@ void CPU_6502::SBC() {
         high += (high & 0xF0) ? 10 : 0;
 
         A = (high << 4) | (low & 0x0F);
-
         return;
     }
 
@@ -187,31 +186,29 @@ void CPU_6502::SBC() {
 
     Word Result = (Word)A + Inverted + (Word)(C);
     C = (Result & 0xFF00) > 0;
-    Z = (Result & 0x00FF) == 0;
-    N = Result & 0x0080;
-    V = ((Result ^ (Word)A) & (Result ^ Inverted)) & 0x0080;
+    Z = (Result & 0xFF) == 0;
+    N = Result & 0x80;
+    V = ((Result ^ (Word)A) & (Result ^ Inverted)) & 0x80;
     A = Result & 0xFF;
-} 
+}
+
+void CPU_6502::compareWith(Byte value) {
+    Word Result = (Word)value - (Word)fetchedValue;
+    C = value >= fetchedValue;
+    Z = (Result & 0xFF) == 0;
+    N = Result & 0x80;
+}
 
 void CPU_6502::CMP() {
-    Word Result = (Word)A - (Word)fetchedValue;
-    C = A >= fetchedValue;
-    Z = (Result & 0xFF) == 0;
-    N = Result & 0x80;
-} 
+    compareWith(A);
+}
 
 void CPU_6502::CPX() {
-    Word Result = (Word)X - (Word)fetchedValue;
-    C = X >= fetchedValue;
-    Z = (Result & 0xFF) == 0;
-    N = Result & 0x80;
-} 
+    compareWith(X);
+}
 
 void CPU_6502::CPY() {
-    Word Result = (Word)Y - (Word)fetchedValue;
-    C = Y >= fetchedValue;
-    Z = (Result & 0xFF) == 0;
-    N = Result & 0x80;
+    compareWith(Y);
 }
 
 
@@ -225,31 +222,31 @@ void CPU_6502::INC() {
     Mem[fetchAddress]++;
     Z = Mem[fetchAddress] == 0;
     N = Mem[fetchAddress] & 0x80;
-} 
+}
 
 void CPU_6502::INX() {
     X++;
     Z = X == 0;
     N = X & 0x80;
-} 
+}
 
 void CPU_6502::INY() {
     Y++;
     Z = Y == 0;
     N = Y & 0x80;
-} 
+}
 
 void CPU_6502::DEC() {
     Mem[fetchAddress]--;
     Z = Mem[fetchAddress] == 0;
     N = Mem[fetchAddress] & 0x80;
-} 
+}
 
 void CPU_6502::DEX() {
     X--;
     Z = X == 0;
     N = X & 0x80;
-} 
+}
 
 void CPU_6502::DEY() {
     Y--;
@@ -277,7 +274,7 @@ void CPU_6502::ASL() {
 
     Z = Result == 0;
     N = (Result >> 7) & 1;
-} 
+}
 
 void CPU_6502::LSR() {
     C = fetchedValue & 1;
@@ -293,7 +290,7 @@ void CPU_6502::LSR() {
 
     Z = Result == 0;
     N = 0;
-} 
+}
 
 void CPU_6502::ROL() {
     Bit PreviousC = C;
@@ -310,7 +307,7 @@ void CPU_6502::ROL() {
 
     Z = Result == 0;
     N = (Result >> 7) & 1;
-} 
+}
 
 void CPU_6502::ROR() {
     Bit PreviousC = C;
@@ -318,14 +315,14 @@ void CPU_6502::ROR() {
 
     Byte Result = (fetchedValue >> 1) | (PreviousC << 7);
 
-    if (InstructionTable[currentInstruction].AddressMode == &CPU_6502::IMP) { 
+    if (InstructionTable[currentInstruction].AddressMode == &CPU_6502::IMP) {
         A = Result;
     }
     else {
         Mem[fetchAddress] = Result;
     }
 
-    Z = Result == 0; 
+    Z = Result == 0;
     N = PreviousC;
 }
 
@@ -337,7 +334,7 @@ void CPU_6502::ROR() {
 
 void CPU_6502::JMP() {
     PC = fetchAddress;
-} 
+}
 
 void CPU_6502::JSR() {
     PC--;
@@ -348,7 +345,7 @@ void CPU_6502::JSR() {
     SP--;
 
     PC = fetchAddress;
-} 
+}
 
 void CPU_6502::RTS() {
     SP++;
@@ -364,110 +361,50 @@ void CPU_6502::RTS() {
 // BRANCHES /
 /////////////
 
+void CPU_6502::branchIf(Bit flag) {
+    if (flag) {
+        remainingCycles++;
+        fetchAddress = PC + fetchAddressRelative;
+
+        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
+            remainingCycles++;
+        }
+
+        PC = fetchAddress;
+    }
+}
 
 void CPU_6502::BCC() {
-    if (C == 0) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(!C);
+}
 
 void CPU_6502::BCS() {
-    if (C == 1) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(C);
+}
 
 void CPU_6502::BEQ() {
-    if (Z == 1) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(Z);
+}
 
 void CPU_6502::BMI() {
-    if (N == 1) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(N);
+}
 
 void CPU_6502::BNE() {
-    if (Z == 0) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(!Z);
+}
 
 void CPU_6502::BPL() {
-    if (N == 0) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(!N);
+}
 
 void CPU_6502::BVC() {
-    if (V == 0) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(!V);
+}
 
 void CPU_6502::BVS() {
-    if (V == 1) {
-        remainingCycles++;
-        fetchAddress = PC + fetchAddressRelative;
-
-        if ((fetchAddress & 0xFF) != (PC & 0xFF)) {
-            remainingCycles++;
-        }
-
-        PC = fetchAddress;
-    }
-} 
+    branchIf(V);
+}
 
 
 ////////////////////////
@@ -477,27 +414,27 @@ void CPU_6502::BVS() {
 
 void CPU_6502::CLC() {
     C = 0;
-} 
+}
 
 void CPU_6502::CLD() {
     D = 0;
-} 
+}
 
 void CPU_6502::CLI() {
     I = 0;
-} 
+}
 
 void CPU_6502::CLV() {
     V = 0;
-} 
+}
 
 void CPU_6502::SEC() {
     C = 1;
-} 
+}
 
 void CPU_6502::SED() {
     D = 1;
-} 
+}
 
 void CPU_6502::SEI() {
     I = 1;
@@ -509,19 +446,22 @@ void CPU_6502::SEI() {
 /////////////////////
 
 
-void CPU_6502::BRK() {
-    PC++;
+void CPU_6502::interrupt(Bit brk) {
+    PC += brk;
 
     Mem[0x0100 | SP] = (PC >> 8) & 0xFF;
     SP--;
-
     Mem[0x0100 | SP] = PC & 0xFF;
     SP--;
 
-    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (1 << 4) | (1 << 5) | (V << 6) | (N << 7);
+    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | ((brk | B) << 4) | (1 << 5) | (V << 6) | (N << 7);
     I = 1;
     SP--;
+}
 
+
+void CPU_6502::BRK() {
+    interrupt(1);
     PC = Mem[0xFFFF] << 8 | Mem[0xFFFE];
 }
 
@@ -529,7 +469,7 @@ void CPU_6502::NOP() {
     if (currentInstruction == 0x04) {
         Halt = 1;
     }
-} 
+}
 
 void CPU_6502::RTI() {
     SP++;
@@ -565,33 +505,15 @@ void CPU_6502::XXX() {
 
 
 void CPU_6502::irq() {
-    if (I == 0) {
-        Mem[0x0100 | SP] = (PC >> 8) & 0xFF;
-        SP--;
-        Mem[0x0100 | SP] = PC & 0xFF;
-        SP--;
+    if (I) return;
 
-        I = 1;
-        Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
-        SP--;
-
-        PC = (Mem[0xFFFF] << 8) | Mem[0xFFFE];
-
-        remainingCycles += 7;
-    }
+    interrupt(0);
+    PC = (Mem[0xFFFF] << 8) | Mem[0xFFFE];
+    remainingCycles += 7;
 }
 
 void CPU_6502::nmi() {
-    Mem[0x0100 | SP] = (PC >> 8) & 0xFF;
-    SP--;
-    Mem[0x0100 | SP] = PC & 0xFF;
-    SP--;
-
-    I = 1;
-    Mem[0x0100 | SP] = (C << 0) | (Z << 1) | (I << 2) | (D << 3) | (B << 4) | (1 << 5) | (V << 6) | (N << 7);
-    SP--;
-
+    interrupt(0);
     PC = (Mem[0xFFFB] << 8) | Mem[0xFFFA];
-
     remainingCycles += 8;
 }
