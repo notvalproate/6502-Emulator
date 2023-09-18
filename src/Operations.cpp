@@ -147,6 +147,19 @@ void CPU_6502::BIT() {
 
 
 void CPU_6502::ADC() {
+    if (D) {
+        Byte low = (A & 0x0F) + (fetchedValue & 0x0F) + C;
+        C = (low > 9) ? 1 : 0;
+        low += (low > 9) ? 6 : 0;
+
+        Byte high = (A >> 4) + (fetchedValue >> 4) + C;
+        C = (high > 9) ? 1 : 0;
+        high += (high > 9) ? 6 : 0;
+
+        A = (high << 4) | (low & 0x0F);
+        return;
+    }
+
     Word Result = (Word)A + (Word)fetchedValue + (Word)C;
     C = (Result >> 8) & 1;
     Z = (Result & 0xFF) == 0;
@@ -156,6 +169,20 @@ void CPU_6502::ADC() {
 }
 
 void CPU_6502::SBC() {
+    if (D) {
+        Byte low = (A & 0x0F) - (fetchedValue & 0x0F) - (1 - C);
+        C = (low & 0xF0) ? 0 : 1;
+        low += (low & 0xF0) ? 10 : 0;
+
+        Byte high = (A >> 4) - (fetchedValue >> 4) - (1 - C);
+        C = (high & 0xF0) ? 0 : 1;
+        high += (high & 0xF0) ? 10 : 0;
+
+        A = (high << 4) | (low & 0x0F);
+
+        return;
+    }
+
     Word Inverted = ((Word)fetchedValue) ^ 0x00FF;
 
     Word Result = (Word)A + Inverted + (Word)(C);

@@ -32,15 +32,18 @@ void CPU_6502::reset() {
 
     A = X = Y = 0;
 
+    totalCycles = 0;
     remainingCycles = 8;
     currentInstruction = 0x00;
 }
 
 void CPU_6502::start() {
     auto start = std::chrono::high_resolution_clock::now();
+
     while (!Halt) {
         clock();
     }
+
     auto end = std::chrono::high_resolution_clock::now();
     auto durationS = std::chrono::duration_cast<std::chrono::seconds>(end - start);
     auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -54,7 +57,7 @@ void CPU_6502::start() {
 
 void CPU_6502::clock() {
     if (remainingCycles == 0) {
-        if (PC == 0x336d) {
+        if (PC == 0x3469) {
             std::cout << "\nALL TESTS PASSED. \n\nTotal Cycles Taken: " << totalCycles << std::endl;
             Halt = 1;
         }
