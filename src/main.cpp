@@ -17,3 +17,6 @@ int main() {
 
     return 0;
 }
+
+// Might try to turn this into an NES emulator, looks like an interesting project to take on.
+// Will be debugging this in x86 to make sure of compatibility in the future
