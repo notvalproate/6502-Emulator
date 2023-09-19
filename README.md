@@ -6,6 +6,6 @@ It passes the functional and decimal tests from [Klaus Dormann's Test Suite](htt
 
 Resources I used for this project:
 
-[obelisk's 6502 docs](http://www.6502.org/users/obelisk/) 
-[masswerk](https://www.masswerk.at/6502/6502_instruction_set.html) 
+[obelisk's 6502 docs](http://www.6502.org/users/obelisk/)<br>
+[masswerk](https://www.masswerk.at/6502/6502_instruction_set.html)<br> 
 [javidx9 on YouTube](https://www.youtube.com/@javidx9) 
